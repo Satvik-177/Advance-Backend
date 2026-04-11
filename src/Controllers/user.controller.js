@@ -44,10 +44,25 @@ const uploadImage = asyncHandler(async(req, res)=>{
 //    public_id: "users/abc123"
 //    }
 
-    res.stats(200).json({
+    res.status(200).json({
         success:true,
         imageUrl:result.secure_url
     })
 })
 
 export default uploadImage
+
+const uploadImage = asyncHandler(async(req,res)=>{
+
+    if(!req.file){
+        res.status(400)
+        throw new Error("file not found")
+    }
+
+    const upload = await uploadToCloudinary(req.file.path)
+
+    res.status(200).json({
+        success:true,
+        imageUrl:result.secure_url
+    })
+})
