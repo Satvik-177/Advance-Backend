@@ -19,8 +19,8 @@ import { uploadToCloudinary } from "../services/upload.service.js";
 // export default uploadImage
 
 //what is req.file
-//req.file = {
- // fieldname: "image",
+// req.file = {
+//   fieldname: "image",
 //   originalname: "profile.png",
 //   encoding: "7bit",
 //   mimetype: "image/png",
@@ -30,7 +30,7 @@ import { uploadToCloudinary } from "../services/upload.service.js";
 //   size: 12345
 // }
 
-const uploadImage = asyncHandler(async(req, res)=>{
+export const uploadImage = asyncHandler(async(req, res)=>{
 
     if(!req.file){
         res.status(400);
@@ -43,23 +43,6 @@ const uploadImage = asyncHandler(async(req, res)=>{
 //    secure_url: "https://res.cloudinary.com/.../image.png",
 //    public_id: "users/abc123"
 //    }
-
-    res.status(200).json({
-        success:true,
-        imageUrl:result.secure_url
-    })
-})
-
-export default uploadImage
-
-const uploadImage = asyncHandler(async(req,res)=>{
-
-    if(!req.file){
-        res.status(400)
-        throw new Error("file not found")
-    }
-
-    const upload = await uploadToCloudinary(req.file.path)
 
     res.status(200).json({
         success:true,
