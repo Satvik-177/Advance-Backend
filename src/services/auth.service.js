@@ -44,11 +44,71 @@ export const userLogin = async( {email,password} )=>{
 
     const jwtSecret = process.env.JWT_SECRET
 
-    const options = {
+    const refreshSecret = process.env.JWT_REFRESH_SECRET
+
+    const accessTokenOptions = {
         expiresIn:"2d"
     };
 
-    const token = jwt.sign(payload,jwtSecret,options)
+    const refreshTokenOptions = {
+        expiresIn:"7d"
+    };
 
-    return {token,user} //internally -> return Promise.resolve( {token,user} )
+    const accessToken = jwt.sign(payload,jwtSecret,accessTokenOptions)
+
+    const refreshToken = jwt.sign(payload,refreshSecret,refreshTokenOptions)
+
+    user.refreshToken = refreshToken
+
+    await user.save()
+
+    return ({
+        accessToken,
+        refreshToken,
+        user:{
+            id:user._id,
+            email:user.email
+        }
+    })
+       //internally -> return Promise.resolve( {token,user} )
 }
+
+export const userRefreshToken = async(refreshToken)=>{
+
+    if(!refreshToken){
+        throw new Error("No refresh token")
+    }
+
+    const decoded = jwt.verify(
+        refreshToken,
+        process.env.JWT_REFRESH_SECRET
+    )
+
+    const user = await User.findById(decoded.id)
+
+    if(!user || user.refreshToken !== refreshToken){
+        throw new Error("Invalid refresh token")
+    }
+
+    const newAccessToken = jwt.sign(
+
+        {id:user._id},
+        process.env.JWT_SECRET,
+        {expiresIn:"15m"}
+    );
+
+    return newAccessToken
+}
+
+export const logoutUser = async(userId)=>{
+
+    const user = await User.findById(userId)
+
+    if(!user){
+        throw new Error("user not found")
+    }
+
+    user.refreshToken = null;  //session ends
+
+    await user.save();
+};

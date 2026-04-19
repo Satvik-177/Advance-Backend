@@ -1,4 +1,4 @@
-import { registerUser } from "../services/auth.service.js"
+import { registerUser, userRefreshToken } from "../services/auth.service.js"
 import { userLogin } from "../services/auth.service.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
 
@@ -6,7 +6,7 @@ import { asyncHandler } from "../utils/asyncHandler.js";
 export const register = asyncHandler(async(req,res)=>{
 
     //call services
-    const user = registerUser(req.body)
+    const user = await registerUser(req.body)
 
     //send response
     res.status(201).json({
@@ -21,15 +21,32 @@ export const register = asyncHandler(async(req,res)=>{
 
 export const login = asyncHandler(async(req,res)=>{
 
-    const {user,token} = userLogin(req.body)
+    const {accessToken,refreshToken,user} = await userLogin(req.body)
 
     res.status(200).json({
         success:true,
-        message:"User logged in successfully",
-        token,
-        user:{
-            id:user._id,
-            email:user.email
-        }
+        accessToken,
+        refreshToken,
+        user
+    });
+});
+
+export const refreshAccessToken = asyncHandler(async(req,res,next)=>{
+
+    const accessToken = await userRefreshToken(req.body)
+
+    res.json({
+        success:true,
+        accessToken
+    })
+})
+
+export const logout = asyncHandler(async(req,res)=>{
+
+    await logoutUser(req.user.id)
+
+    res.status(200).json({
+        success:true,
+        message:"Logged out successfully"
     });
 });
